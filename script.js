@@ -83,9 +83,10 @@ const displayMovements = function (movements) {
 };
 
 // Calculations
-const calcDisplayBalance = movements => {
-  const balance = movements.reduce((acc, mov) => acc + mov, 0);
-  labelBalance.textContent = `$${balance}`;
+const calcDisplayBalance = acc => {
+  acc.balance = acc.movements.reduce((acc, mov) => acc + mov, 0);
+  labelBalance.textContent = `$${acc.balance}`;
+  console.log(acc);
 };
 
 const calcDisplaySummary = function (acc) {
@@ -141,9 +142,46 @@ btnLogin.addEventListener('click', function (e) {
     displayMovements(currentAccount.movements);
 
     // Display balance
-    calcDisplayBalance(currentAccount.movements);
+    calcDisplayBalance(currentAccount);
 
     // Display summary
     calcDisplaySummary(currentAccount);
   }
+});
+
+btnTransfer.addEventListener('click', function (e) {
+  e.preventDefault();
+
+  // Get receiving account
+  const receivingAccount = accounts.find(
+    acc => acc.username === inputTransferTo.value
+  );
+
+  // Get transfer amount
+  const transferAmount = parseInt(inputTransferAmount.value);
+
+  if (
+    receivingAccount &&
+    transferAmount > 0 &&
+    currentAccount.balance >= transferAmount
+  ) {
+    // Add transfer amount to receiving account movements
+    receivingAccount.movements.push(transferAmount);
+
+    // substract transfer amount from current account movements
+    currentAccount.movements.push(-transferAmount);
+
+    // Update UI
+    displayMovements(currentAccount.movements);
+    calcDisplayBalance(currentAccount);
+    calcDisplaySummary(currentAccount);
+
+    // Display transfer complete message
+  } else {
+    // Display insufficient funds message
+    console.log('Something went wrong!');
+  }
+
+  // Clear form
+  inputTransferTo.value = inputTransferAmount.value = '';
 });
